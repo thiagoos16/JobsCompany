@@ -24,4 +24,13 @@ class CompaniesController extends Controller
 
         return response()->json($company);
     }
+
+    public function store(Request $request)
+    {
+        $company = new Company();
+        $company->fill($request->all());
+        $company->save();
+
+        return response()->json($company, 201);
+    }
 }

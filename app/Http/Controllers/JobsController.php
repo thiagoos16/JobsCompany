@@ -28,4 +28,13 @@ class JobsController extends Controller
 
         return response()->json($job);
     }
+
+    public function store(Request $request)
+    {
+        $job = new Job();
+        $job->fill($request->all());
+        $job->save();
+
+        return response()->json($job, 201);
+    }
 }
