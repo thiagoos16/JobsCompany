@@ -53,4 +53,17 @@ class CompaniesController extends Controller
 
         return response()->json($company);
     }
+
+    public function destroy($id)
+    {
+        $company = Company::find($id);
+
+        if(!$company) {
+            return response()->json([
+                'message'   => 'Record not found',
+            ], 404);
+        }
+
+        $company->delete();
+    }
 }
