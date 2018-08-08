@@ -8,10 +8,12 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
+use Hash;
+
 class CompaniesController extends Controller
 {
     public function __construct() {
-        $this->middleware('auth', ['except' => ['index', 'show']]);
+        $this->middleware('jwt.auth', ['except' => ['index', 'show']]);
     }
     
     public function index()
@@ -37,6 +39,7 @@ class CompaniesController extends Controller
     {
         $company = new Company();
         $company->fill($request->all());
+        $company->password = Hash::make($request->password);
         $company->save();
 
         return response()->json($company, 201);
