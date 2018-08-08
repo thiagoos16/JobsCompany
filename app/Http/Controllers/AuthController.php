@@ -8,7 +8,7 @@ use App\Models\Company;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use JWTAuth;
-use Hash;
+use Hash, Validator;
 
 class AuthController extends Controller
 {
