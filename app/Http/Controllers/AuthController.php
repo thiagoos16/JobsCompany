@@ -16,6 +16,18 @@ class AuthController extends Controller
       // Get only email and password from request
       $credentials = $request->only('email', 'password');
 
+        $validator = Validator::make($credentials, [
+            'password' => 'required',
+            'email' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message'   => 'Invalid credentials',
+                'errors'        => $validator->errors()->all()
+            ], 422);
+        }
+
       // Get user by email
       $company = Company::where('email', $credentials['email'])->first();
 

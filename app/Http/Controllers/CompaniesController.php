@@ -13,7 +13,7 @@ use Hash;
 class CompaniesController extends Controller
 {
     public function __construct() {
-        $this->middleware('jwt.auth', ['except' => ['index', 'show']]);
+        $this->middleware('jwt.auth', ['except' => ['index']]);
     }
     
     public function index()
