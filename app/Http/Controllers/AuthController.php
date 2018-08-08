@@ -45,17 +45,41 @@ class AuthController extends Controller
           ], 401);
       }
 
-      // Generate Token
-      $token = JWTAuth::fromUser($company, ['foo' => 'bar', 'baz' => 'bob']);
+    //   // Generate Token
+    //   $token = JWTAuth::fromUser($company, ['foo' => 'bar', 'baz' => 'bob']);
       
-      // Get expiration time
-      $objectToken = JWTAuth::setToken($token);
-      $expiration = JWTAuth::decode($objectToken->getToken())->get('exp');
+    //   // Get expiration time
+    //   $objectToken = JWTAuth::setToken($token);
+    //   $expiration = JWTAuth::decode($objectToken->getToken())->get('exp');
 
-      return response()->json([
-        'access_token' => $token,
-        'token_type' => 'bearer',
-        'expires_in' => $expiration
-      ]);
+    //   return response()->json([
+    //     'access_token' => $token,
+    //     'token_type' => 'bearer',
+    //     'expires_in' => $expiration
+    //   ]);
+
+        try {
+            // Attempt to verify the credentials and create a token for the user
+            if (! $token = JWTAuth::attempt($credentials)) {
+                return response()->json([
+                    'status' => 'error', 
+                    'message' => 'We can`t find an account with this credentials.'
+                ], 401);
+            }
+        } catch (JWTException $e) {
+            // Something went wrong with JWT Auth.
+            return response()->json([
+                'status' => 'error', 
+                'message' => 'Failed to login, please try again.'
+            ], 500);
+        }
+        // All good so return the token
+        return response()->json([
+            'status' => 'success', 
+            'data'=> [
+                'token' => $token
+                // You can add more details here as per you requirment. 
+            ]
+        ]);
     }
 }
