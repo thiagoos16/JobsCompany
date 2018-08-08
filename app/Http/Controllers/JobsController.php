@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
+use Validator;
+
 class JobsController extends Controller
 {
     public function __construct() {
@@ -63,6 +65,7 @@ class JobsController extends Controller
     public function update(Request $request, $id)
     {
         $job = Job::find($id);
+        $data = $request->all();
 
         if(!$job) {
             return response()->json([
@@ -88,6 +91,9 @@ class JobsController extends Controller
                 'errors'    => $validator->errors()->all()
             ], 422);
         }
+
+        $job->fill($request->all());
+        $job->save();
 
         return response()->json($job);
     }

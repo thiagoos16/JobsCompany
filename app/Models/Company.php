@@ -11,7 +11,7 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 class Company extends Model implements AuthenticatableContract, CanResetPasswordContract
 {
     use Authenticatable, CanResetPassword;
-    
+
     protected $fillable = ['name', 'email', 'website', 'logo', 'password'];
 
     // protected $hidden = ['password'];

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Company;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-use JWTAuth;
+use JWTAuth, JWTFactory;
 use Hash, Validator;
 
 class AuthController extends Controller
@@ -46,8 +46,8 @@ class AuthController extends Controller
       }
 
       // Generate Token
-      $token = JWTAuth::fromUser($company);
-
+      $token = JWTAuth::fromUser($company, ['foo' => 'bar', 'baz' => 'bob']);
+      
       // Get expiration time
       $objectToken = JWTAuth::setToken($token);
       $expiration = JWTAuth::decode($objectToken->getToken())->get('exp');
