@@ -8,10 +8,15 @@ use App\Models\Company;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use JWTAuth, JWTFactory;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Hash, Validator;
 
 class AuthController extends Controller
 {
+    public function __construct() {
+        $this->middleware('jwt.auth', ['except' => ['authenticate']]);
+    }
+
     public function authenticate(Request $request) {
       // Get only email and password from request
       $credentials = $request->only('email', 'password');
@@ -81,5 +86,27 @@ class AuthController extends Controller
                 // You can add more details here as per you requirment. 
             ]
         ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $this->validate($request, [
+            'token' => 'required'
+        ]);
+        $output = new \Symfony\Component\Console\Output\ConsoleOutput();
+        $output->writeln("token:".$request);
+        try {
+            JWTAuth::invalidate($request->token);
+ 
+            return response()->json([
+                'success' => true,
+                'message' => 'User logged out successfully'
+            ]);
+        } catch (JWTException $exception) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sorry, the user cannot be logged out'
+            ], 500);
+        }
     }
 }

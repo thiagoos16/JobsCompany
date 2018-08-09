@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -65,6 +66,16 @@ class Handler extends ExceptionHandler
             return response()->json([
                 'error' => [
                     'description' => 'Method Not Allowed',
+                    'messages' => []
+                ]
+            ], 405);
+        }
+
+        // Method unauthorized exception handler
+        if($exception instanceof UnauthorizedHttpException) {
+            return response()->json([
+                'error' => [
+                    'description' => 'Token Was Expired',
                     'messages' => []
                 ]
             ], 405);
