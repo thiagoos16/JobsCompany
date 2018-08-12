@@ -24,6 +24,7 @@ Route::group(array('prefix' => 'api'), function()
 
   Route::post('auth/login', 'AuthController@authenticate');
   Route::get('auth/logout', 'AuthController@logout');
+  Route::get('auth/me', 'AuthController@me');
 });
 
 Route::get('/', function () {
