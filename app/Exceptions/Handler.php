@@ -7,6 +7,10 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\HttpKernel\Exception\TokenBlacklistedException;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use JWTAuth;
 
 class Handler extends ExceptionHandler
 {
@@ -52,7 +56,7 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $exception)
     {
         // Not found exception handler
-        if($exception instanceof NotFoundHttpException) {
+        if ($exception instanceof NotFoundHttpException) {
             return response()->json([
                 'error' => [
                     'description' => 'Invalid URI',
@@ -62,7 +66,7 @@ class Handler extends ExceptionHandler
         }
 
         // Method not allowed exception handler
-        if($exception instanceof MethodNotAllowedHttpException) {
+        if ($exception instanceof MethodNotAllowedHttpException) {
             return response()->json([
                 'error' => [
                     'description' => 'Method Not Allowed',
@@ -72,14 +76,37 @@ class Handler extends ExceptionHandler
         }
 
         // Method unauthorized exception handler
-        if($exception instanceof UnauthorizedHttpException) {
-            return response()->json([
-                'error' => [
-                    'description' => 'Token Was Expired',
-                    'messages' => []
-                ]
-            ], 405);
+        if ($exception instanceof UnauthorizedHttpException) {
+            // If the token is expired, then it will be refreshed and added to the headers
+            //try {
+                try {
+                    $refreshed = JWTAuth::refresh(JWTAuth::getToken());
+                    $user = JWTAuth::setToken($refreshed)->toUser();
+                    header('Authorization: Bearer ' . $refreshed);
+                } catch (JWTException $e) {
+                    return response()->json([
+                       'error' => [
+                            'description' => 'Token can\'t be refreshed',
+                       ]
+                    ], 405);
+                }
+             catch (UnauthorizedHttpException $e) {
+                return response()->json([
+                    'error' => [
+                        'description' => 'Token was expired',
+                    ]
+                 ], 405);
+            } catch (TokenBlacklistedException $e) {
+                return response()->json([
+                    'error' => [
+                        'description' => 'Token was expired',
+                    ]
+                 ], 405);
+            }
         }
+
+        //TokenBlacklistedException
+        //JWTException
 
         return parent::render($request, $exception);
     }
