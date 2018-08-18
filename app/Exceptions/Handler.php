@@ -90,19 +90,12 @@ class Handler extends ExceptionHandler
                        ]
                     ], 405);
                 }
-             catch (UnauthorizedHttpException $e) {
+                
                 return response()->json([
                     'error' => [
                         'description' => 'Token was expired',
                     ]
                  ], 405);
-            } catch (TokenBlacklistedException $e) {
-                return response()->json([
-                    'error' => [
-                        'description' => 'Token was expired',
-                    ]
-                 ], 405);
-            }
         }
 
         //TokenBlacklistedException
