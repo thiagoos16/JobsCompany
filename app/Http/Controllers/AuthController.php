@@ -5,20 +5,25 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Company;
+use App\Models\User;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use JWTAuth, JWTFactory;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Hash, Validator, Auth;
+use Config;
 
 class AuthController extends Controller
 {
     public function __construct() {
-        $this->middleware('jwt.auth', ['except' => ['authenticate']]);
+        $this->middleware('jwt.auth', ['except' => ['authenticate', 'authenticateUser']]);
     }
 
     public function authenticate(Request $request) {
-        // Get only email and password from request
+
+        Config::set('jwt.user', 'App\Models\Company');
+        Config::set('auth.providers.users.model', Company::class);
+        
         $credentials = $request->only('email', 'password');
 
         $validator = Validator::make($credentials, [
@@ -90,8 +95,89 @@ class AuthController extends Controller
         // ]);
     }
 
+    public function authenticateUser(Request $request) {
+
+        Config::set('jwt.user', 'App\Models\User');
+        Config::set('auth.providers.users.model', \App\Models\User::class);
+        
+        $credentials = $request->only('phone', 'password');
+
+        $validator = Validator::make($credentials, [
+            'password' => 'required',
+            'phone' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message'   => 'Invalid credentials',
+                'errors'        => $validator->errors()->all()
+            ], 422);
+        }
+
+        // Get user by email
+        $user = User::where('phone', $credentials['phone'])->first();
+
+        // Validate Company
+        if(!$user) {
+        return response()->json([
+            'error' => 'Invalid credentials'
+        ], 401);
+        }
+
+        // Validate Password
+        if (!Hash::check($credentials['password'], $user->password)) {
+            return response()->json([
+            'error' => 'Invalid credentials'
+            ], 401);
+        }
+
+        // Generate Token
+        $token = JWTAuth::fromUser($user, ['foo' => 'bar', 'baz' => 'bob']);
+        header('Authorization: bearer ' . $token);
+        
+        // Get expiration time
+        $objectToken = JWTAuth::setToken($token);
+        $expiration = JWTAuth::decode($objectToken->getToken())->get('exp');
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => date( 'Y-m-d H:i:s', $expiration)
+        ]);
+    }
+
     public function logout(Request $request)
     {
+        Config::set('jwt.user', 'App\Models\Company');
+        Config::set('auth.providers.users.model', Company::class);
+
+        $output = new \Symfony\Component\Console\Output\ConsoleOutput();
+        $output->writeln("token:".$request);
+        // $this->validate($request, [
+        //     'token' => 'required'
+        // ]);
+        // $output = new \Symfony\Component\Console\Output\ConsoleOutput();
+        // $output->writeln("token:".$request);
+        try {
+            JWTAuth::invalidate($request->token);
+ 
+            return response()->json([
+                'success' => true,
+                'message' => 'User logged out successfully'
+            ]);
+        } catch (JWTException $exception) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sorry, the user cannot be logged out'
+            ], 500);
+        }
+    }
+
+    public function logoutUser(Request $request)
+    {
+        Config::set('jwt.user', 'App\Models\User');
+        Config::set('auth.providers.users.model', \App\Models\User::class);
+
         $output = new \Symfony\Component\Console\Output\ConsoleOutput();
         $output->writeln("token:".$request);
         // $this->validate($request, [

@@ -21,9 +21,12 @@ Route::group(array('prefix' => 'api'), function()
 
   Route::resource('jobs', 'JobsController');
   Route::resource('companies', 'CompaniesController');
+  Route::resource('user', 'UserController');
 
   Route::post('auth/login', 'AuthController@authenticate');
+  Route::post('auth/loginuser', 'AuthController@authenticateUser');
   Route::get('auth/logout', 'AuthController@logout');
+  Route::get('auth/logoutuser', 'AuthController@logoutUser');
   Route::get('auth/me', 'AuthController@me');
 });
 
